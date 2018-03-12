@@ -125,6 +125,50 @@ struct envy_bios_dacload {
 	struct envy_bios_dacload_entry *entries;
 };
 
+struct nv_bios_biosdata_v1 {
+	uint8_t bios_version[4];        ///< BIOS Binary Version
+	uint8_t bios_oem_version;       ///< BIOS OEM Version Number
+	uint8_t bios_checksum;          ///< BIOS 0 Checksum inserted during the build
+	uint16_t int15_post_callbacks;  ///< INT15 Callbacks issued during POST
+	uint16_t int15_system_callbacks;///< General INT15 Callbacks
+	uint16_t board_id;              ///< Board ID
+	uint16_t signon_frame_count;    ///< Number of frames to display SignOn Message
+	char biosmod_date[6];           ///< Date BIOSMod was last run (in MMDDYY format)
+};
+
+struct nv_bios_biosdata_v2 {
+	uint8_t bios_version[4];        ///< BIOS Binary Version
+	uint8_t bios_oem_version;       ///< BIOS OEM Version Number
+	uint8_t bios_checksum;          ///< BIOS 0 Checksum inserted during the build
+	uint16_t int15_post_callbacks;  ///< INT15 Callbacks during POST
+	uint16_t int15_system_callbacks;///< General INT15 Callbacks
+	uint16_t signon_frame_count;    ///< Number of frames to display SignOn Message
+	uint32_t reserved;
+	uint8_t max_heads_at_post;      ///< Max number of heads to boot at POST
+	uint8_t memory_size_report;     ///< Scheme for computing memory size displayed in Control Panel. Does not affect functionality in any way
+	uint8_t hscale_factor;          ///< Horizontal Scale Factor
+	uint8_t vscale_factor;          ///< Vertical Scale Factor
+	uint16_t data_range_table;      ///< Pointer to the table of pointers identifying where all data in the VGA BIOS image is located that the OS or EFI GPU driver need
+	uint16_t rompacks_pointer;      ///< Pointer to any ROMpacks. A NULL (0) pointer indicates that no run-time ROMpacks are present
+	uint16_t applied_rompacks_ptr;  ///< Pointer to a list of indexes of applied run-time ROMpacks
+	uint8_t applied_rompacks_max;   ///< Maximum number of stored indexes in the list pointed to by the Applied ROMpacks pointer
+	uint8_t applied_rompacks_count; ///< Number of applied run-time ROMpacks
+	                                ///< NOTE: Count can be higher than amount stored at the AppliedROMpacksPtr array, if more than the value at AppliedROMpackMax were applied
+	uint8_t module_map_external_0;  ///< Module Map External 0 byte. Indicates whether modules outside of the BIT and not at fixed addresses are included in the binary
+	uint32_t compression_info_ptr;  ///< Pointer to compression information structure (for use only by stage0 build script and decompression run-time code)
+};
+
+struct envy_bios_biosdata {
+	struct envy_bios_bit_entry *bit;
+	uint8_t valid;
+
+	uint8_t biosdata_version;
+	union {
+		struct nv_bios_biosdata_v1 biosdata_v1;
+		struct nv_bios_biosdata_v2 biosdata_v2;
+	} nv_biosdata;
+};
+
 struct envy_bios_iunk21_entry {
 	uint16_t offset;
 	uint32_t val;
@@ -1688,6 +1732,7 @@ struct envy_bios {
 	struct envy_bios_info info;
 	struct envy_bios_dacload dacload;
 	struct envy_bios_iunk21 iunk21;
+	struct envy_bios_biosdata biosdata;
 
 	struct envy_bios_i2cscript i2cscript;
 
@@ -1785,6 +1830,7 @@ static inline int bios_string(struct envy_bios *bios, unsigned int offs, char *r
 #define ENVY_BIOS_PRINT_DCB_ALL		0x007f0000
 #define ENVY_BIOS_PRINT_T		0x00800000
 #define ENVY_BIOS_PRINT_d		0x01000000
+#define ENVY_BIOS_PRINT_BIOSINFO    0x02000000
 #define ENVY_BIOS_PRINT_ALL		0x1fffffff
 #define ENVY_BIOS_PRINT_BLOCKS		0x20000000
 #define ENVY_BIOS_PRINT_UNUSED		0x40000000
@@ -1892,6 +1938,8 @@ void envy_bios_print_mux (struct envy_bios *bios, FILE *out, unsigned mask);
 int envy_bios_parse_mem (struct envy_bios *bios);
 void envy_bios_print_mem (struct envy_bios *bios, FILE *out, unsigned mask);
 
+int envy_bios_parse_bit_B (struct envy_bios *bios, struct envy_bios_bit_entry *bit);
+void envy_bios_print_bit_B (struct envy_bios *bios, FILE *out, unsigned mask);
 
 struct enum_val {
 	int val;

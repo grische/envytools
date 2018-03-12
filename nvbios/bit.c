@@ -39,8 +39,8 @@ static const struct {
 } bit_types[] = {
 	{ '2', 1, envy_bios_parse_bit_2 },	/* i2c */
 	{ 'A', 1, envy_bios_parse_bit_A },	/* Analog */
-	{ 'B', 1, envy_bios_parse_bit_empty },	/* BIOSDATA v1 */
-	{ 'B', 2, envy_bios_parse_bit_empty },	/* BIOSDATA v2 */
+	{ 'B', 1, envy_bios_parse_bit_B },	/* BIOSDATA v1 */
+	{ 'B', 2, envy_bios_parse_bit_B },	/* BIOSDATA v2 */
 	{ 'C', 1, envy_bios_parse_bit_empty },	/* Clock v1 */
 	{ 'C', 2, envy_bios_parse_bit_empty },	/* Clock v2 */
 	{ 'c', 1, envy_bios_parse_bit_empty },	/* 32 Bit */
